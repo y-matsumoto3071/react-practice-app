@@ -1,9 +1,15 @@
 import './App.css';
+import { Amplify } from 'aws-amplify';
+import { withAuthenticator } from '@aws-amplify/ui-react';
+import "@aws-amplify/ui-react/styles.css";
 import { useState, useRef } from 'react';
 import TodoList from './TodoList';
 import { v4 as uuidv4 } from 'uuid';
 
-function App() {
+import awsExports from "./aws-exports";
+Amplify.configure(awsExports);
+
+function App({ signOut, user }) {
   const [todos, setTodos] = useState([]);
 
   const todoNameRef = useRef();
@@ -32,15 +38,26 @@ function App() {
 
   return (
     <div className="App">
-      <TodoList todos={todos} toggleTodo={toggleTodo} />
-      <input type="text" ref={todoNameRef} />
-      <button onClick={handleAddTodo}>タスクを追加</button>
-      <button onClick={handleClear}>完了したタスクの削除</button>
-      <div>
-        残りのタスク:{todos.filter((todo) => !todo.completed).length}
-      </div>
+      <header className="App-header">
+        <h2>Hello Pyoru!!</h2>
+        {user ? (
+          <>
+            <h3>{user.username}</h3>
+            <TodoList todos={todos} toggleTodo={toggleTodo} />
+            <input type="text" ref={todoNameRef} />
+            <button onClick={handleAddTodo}>タスクを追加</button>
+            <button onClick={handleClear}>完了したタスクの削除</button>
+            <div>
+              残りのタスク:{todos.filter((todo) => !todo.completed).length}
+            </div>
+            <button onClick={signOut}>サインアウト</button>
+          </>
+        ) : (
+          <h3>サインインして下さい</h3>
+        )}
+      </header>
     </div>
   );
 }
 
-export default App;
+export default withAuthenticator(App);
